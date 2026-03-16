@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BusTrack</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-box">
+
+    <div class="auth-logo">
+      <div class="logo-icon">B</div>
+      <h1>BusTrack</h1>
+      <p>Suivi de bus en temps reel</p>
+    </div>
+
+    <!-- TOGGLE BUTTONS -->
+    <div class="auth-toggle">
+      <button id="btn-login-tab"  class="toggle-btn active" onclick="showLogin()">Connexion</button>
+      <button id="btn-signup-tab" class="toggle-btn"        onclick="showSignup()">Creer un compte</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form">
+      <div class="input-group">
+        <label>Nom d utilisateur</label>
+        <input type="text"     id="login-username" placeholder="Votre nom d utilisateur"/>
+      </div>
+      <div class="input-group">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" placeholder="Votre mot de passe"/>
+      </div>
+      <button class="btn-auth" onclick="login()">Se connecter</button>
+      <p id="login-error" class="auth-error"></p>
+      <p class="auth-switch">
+        Pas encore de compte ?
+        <a href="#" onclick="showSignup()">Creer un compte</a>
+      </p>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signup-form" style="display:none">
+      <div class="input-group">
+        <label>Nom d utilisateur</label>
+        <input type="text"     id="signup-username" placeholder="Choisissez un nom d utilisateur"/>
+      </div>
+      <div class="input-group">
+        <label>Mot de passe</label>
+        <input type="password" id="signup-password" placeholder="Choisissez un mot de passe"/>
+      </div>
+      <div class="input-group">
+        <label>Confirmer le mot de passe</label>
+        <input type="password" id="signup-confirm" placeholder="Repetez le mot de passe"/>
+      </div>
+      <div class="signup-info">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Votre compte sera cree avec le role <b>Utilisateur</b>.
+        Seul un administrateur peut vous donner les droits admin.
+      </div>
+      <button class="btn-auth btn-signup" onclick="signup()">Creer mon compte</button>
+      <p id="signup-error"   class="auth-error"></p>
+      <p id="signup-success" class="auth-success"></p>
+      <p class="auth-switch">
+        Deja un compte ?
+        <a href="#" onclick="showLogin()">Se connecter</a>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" style="display:none">
+
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-small">B</div>
+      <span>BusTrack</span>
+      <span id="user-role-badge"></span>
+      <button class="logout-btn" onclick="logout()">Quitter</button>
+    </div>
+
+    <div id="admin-panel" style="display:none">
+
+      <div class="panel-title">Gestion des utilisateurs</div>
+      <div class="section">
+        <div class="section-title">Utilisateurs enregistres</div>
+        <div id="user-list"></div>
+      </div>
+
+      <div class="panel-title">Gestion des bus</div>
+      <div class="section">
+        <input type="text" id="new-bus-id"   placeholder="ID bus ex: BUS_001"/>
+        <input type="text" id="new-bus-name" placeholder="Nom du bus"/>
+        <button class="btn-add" onclick="addBus()">Ajouter le bus</button>
+      </div>
+      <div class="section">
+        <div class="section-title">Bus enregistres</div>
+        <div id="bus-list"></div>
+      </div>
+
+      <div class="panel-title">Gestion des stations</div>
+      <div class="section">
+        <input type="text"   id="new-station-name"   placeholder="Nom de la station"/>
+        <input type="number" id="new-station-lat"    placeholder="Latitude" step="0.0001"/>
+        <input type="number" id="new-station-lng"    placeholder="Longitude" step="0.0001"/>
+        <input type="number" id="new-station-radius" placeholder="Rayon km ex: 0.3" step="0.1"/>
+        <button class="btn-add" onclick="addStation()">Ajouter la station</button>
+        <p class="hint">ou cliquez directement sur la carte</p>
+      </div>
+      <div class="section">
+        <div class="section-title">Stations en base</div>
+        <div id="station-list-admin"></div>
+      </div>
+
+    </div>
+
+    <div id="user-panel">
+      <div class="panel-title">Bus en temps reel</div>
+      <div id="buses-sidebar"></div>
+      <div class="panel-title" style="margin-top:12px">Stations</div>
+      <div id="stations-sidebar"></div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="eta-popup" style="display:none">
+    <div class="eta-header">
+      <div class="eta-station-icon">S</div>
+      <span id="eta-station-name">Station</span>
+      <button onclick="closeEta()">&#10005;</button>
+    </div>
+    <div class="eta-body">
+      <div class="eta-row">
+        <div class="eta-col">
+          <div class="eta-label">Bus</div>
+          <div id="eta-bus-id" class="eta-bus">--</div>
+        </div>
+        <div class="eta-col">
+          <div class="eta-label">Vitesse GPS</div>
+          <div id="eta-speed" class="eta-speed">--</div>
+        </div>
+      </div>
+      <div class="eta-divider"></div>
+      <div class="eta-label">Distance jusqu a la station</div>
+      <div id="eta-dist" class="eta-dist">-- km</div>
+      <div class="eta-label">Prediction IA — ETA</div>
+      <div id="eta-time" class="eta-value">-- min</div>
+      <div class="eta-label">Heure d arrivee estimee</div>
+      <div id="eta-arrival" class="eta-arrival">--:--:--</div>
+      <div class="eta-divider"></div>
+      <div class="eta-row">
+        <div class="eta-col">
+          <div class="eta-label">Run time</div>
+          <div id="eta-run" class="eta-sub">-- s</div>
+        </div>
+        <div class="eta-col">
+          <div class="eta-label">Dwell time</div>
+          <div id="eta-dwell" class="eta-sub">-- s</div>
+        </div>
+      </div>
+      <div id="eta-update" class="eta-update"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:Arial,sans-serif; height:100vh; overflow:hidden; background:#1a1a2e; }
+
+/* ==================== AUTH ==================== */
+#auth-screen {
+  position:fixed; inset:0;
+  background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+  display:flex; align-items:center; justify-content:center; z-index:9999;
+  padding:20px;
+}
+.auth-box {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px; padding:36px 32px;
+  width:100%; max-width:400px;
+}
+.auth-logo { text-align:center; margin-bottom:24px; }
+.logo-icon {
+  width:60px; height:60px; border-radius:16px;
+  background:#00d4aa; color:#fff; font-size:28px; font-weight:bold;
+  display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;
+}
+.auth-logo h1 { color:#fff; font-size:24px; margin-bottom:4px; }
+.auth-logo p  { color:#888; font-size:13px; }
+
+/* TOGGLE */
+.auth-toggle {
+  display:flex; background:rgba(255,255,255,0.06);
+  border-radius:10px; padding:4px; margin-bottom:24px; gap:4px;
+}
+.toggle-btn {
+  flex:1; padding:10px; border:none; border-radius:8px;
+  font-size:14px; font-weight:600; cursor:pointer;
+  background:transparent; color:#888; transition:all .2s;
+}
+.toggle-btn.active {
+  background:#00d4aa; color:#fff;
+}
+.toggle-btn:not(.active):hover { color:#fff; }
+
+/* INPUTS */
+.input-group { margin-bottom:14px; }
+.input-group label { display:block; font-size:12px; color:#aaa; margin-bottom:6px; }
+.input-group input {
+  width:100%; padding:12px 16px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px; color:#fff; font-size:14px;
+  transition:border .2s;
+}
+.input-group input:focus { outline:none; border-color:#00d4aa; }
+.input-group input::placeholder { color:#555; }
+
+/* SIGNUP INFO */
+.signup-info {
+  display:flex; align-items:flex-start; gap:8px;
+  background:rgba(0,212,170,0.08); border:1px solid rgba(0,212,170,0.2);
+  border-radius:8px; padding:10px 12px;
+  font-size:12px; color:#aaa; margin-bottom:14px; line-height:1.5;
+}
+.signup-info svg { flex-shrink:0; margin-top:1px; color:#00d4aa; }
+.signup-info b { color:#00d4aa; }
+
+/* BUTTONS */
+.btn-auth {
+  width:100%; padding:13px; margin-top:4px;
+  background:#00d4aa; border:none; border-radius:8px;
+  color:#fff; font-size:15px; font-weight:bold; cursor:pointer;
+  transition:background .2s;
+}
+.btn-auth:hover { background:#00b894; }
+.btn-signup { background:#0f3460; }
+.btn-signup:hover { background:#1a4a7a; }
+
+/* MESSAGES */
+.auth-error   { color:#e74c3c; font-size:12px; text-align:center; margin-top:10px; min-height:16px; }
+.auth-success { color:#00d4aa; font-size:12px; text-align:center; margin-top:6px; min-height:16px; }
+.auth-switch  { text-align:center; font-size:12px; color:#666; margin-top:14px; }
+.auth-switch a { color:#00d4aa; text-decoration:none; }
+.auth-switch a:hover { text-decoration:underline; }
+
+/* ==================== APP ==================== */
+#app-screen { display:flex; height:100vh; }
+
+#sidebar {
+  width:300px; min-width:300px; background:#1a1a2e;
+  overflow-y:auto; z-index:100; border-right:1px solid #0f3460;
+}
+.sidebar-header {
+  display:flex; align-items:center; gap:8px;
+  padding:14px 16px; background:#16213e;
+  border-bottom:1px solid #0f3460;
+}
+.logo-small {
+  width:28px; height:28px; border-radius:6px;
+  background:#00d4aa; color:#fff; font-weight:bold; font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.sidebar-header span:nth-child(2) { color:#fff; font-weight:bold; flex:1; font-size:14px; }
+#user-role-badge {
+  font-size:10px; padding:2px 6px; border-radius:4px;
+  background:#0f3460; color:#00d4aa; font-weight:bold;
+}
+.logout-btn {
+  background:transparent; border:1px solid #0f3460;
+  color:#888; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;
+}
+.logout-btn:hover { border-color:#e74c3c; color:#e74c3c; }
+
+.panel-title {
+  padding:10px 16px 4px; font-size:10px; font-weight:bold;
+  color:#00d4aa; text-transform:uppercase; letter-spacing:1px;
+}
+.section { padding:10px 16px; border-bottom:1px solid #0f3460; }
+.section-title { font-size:11px; color:#888; margin-bottom:6px; font-weight:bold; }
+.section input, .section select {
+  width:100%; padding:7px 10px; margin:3px 0;
+  background:#16213e; border:1px solid #0f3460;
+  border-radius:6px; color:#fff; font-size:12px;
+}
+.section input::placeholder { color:#444; }
+.section select option { background:#16213e; }
+.btn-add {
+  width:100%; padding:8px; margin-top:6px;
+  background:#00d4aa; border:none; border-radius:6px;
+  color:#fff; font-size:12px; cursor:pointer; font-weight:bold;
+}
+.btn-add:hover { background:#00b894; }
+.hint { font-size:10px; color:#444; margin-top:4px; text-align:center; }
+
+.bus-card {
+  margin:4px 12px; padding:10px 12px;
+  background:#16213e; border:1px solid #0f3460;
+  border-radius:8px; cursor:pointer; transition:border-color .2s;
+}
+.bus-card:hover { border-color:#00d4aa; }
+.bus-card .bc-id     { font-size:13px; font-weight:bold; color:#00d4aa; }
+.bus-card .bc-status { font-size:11px; margin-top:2px; }
+.bus-card .bc-speed  { font-size:12px; color:#aaa; margin-top:4px; }
+.bus-card .bc-pos    { font-size:10px; color:#555; margin-top:2px; }
+
+.station-card {
+  margin:3px 12px; padding:8px 12px;
+  background:#16213e; border:1px solid #0f3460;
+  border-radius:8px; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:border-color .2s;
+}
+.station-card:hover { border-color:#f39c12; }
+.station-card .sc-name { font-size:12px; color:#fff; }
+.station-card .sc-del {
+  background:transparent; border:none;
+  color:#e74c3c; cursor:pointer; font-size:14px; padding:0 4px;
+}
+
+.user-card {
+  margin:3px 12px; padding:8px 12px;
+  background:#16213e; border:1px solid #0f3460;
+  border-radius:8px; display:flex; align-items:center;
+  justify-content:space-between;
+}
+.user-card .uc-name  { font-size:12px; color:#fff; }
+.user-card .uc-role  { font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px; }
+.uc-role.admin { background:rgba(0,212,170,0.15); color:#00d4aa; }
+.uc-role.user  { background:rgba(255,255,255,0.06); color:#888; }
+.user-card .uc-del {
+  background:transparent; border:none;
+  color:#e74c3c; cursor:pointer; font-size:14px;
+}
+
+#map { flex:1; z-index:1; }
+
+@keyframes bus-bounce {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(-5px); }
+}
+.bus-icon-wrap { animation:bus-bounce 1.5s ease-in-out infinite; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.5)); }
+.bus-stopped   { filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+.station-icon-wrap { filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5)); cursor:pointer; }
+
+#eta-popup {
+  position:fixed; right:20px; bottom:20px; width:300px;
+  background:#16213e; border:1px solid #00d4aa; border-radius:14px;
+  z-index:1000; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.eta-header {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px; background:#00d4aa;
+}
+.eta-station-icon {
+  width:28px; height:28px; border-radius:8px;
+  background:rgba(255,255,255,0.3); color:#fff;
+  font-weight:bold; font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.eta-header span { color:#fff; font-weight:bold; font-size:14px; flex:1; }
+.eta-header button { background:transparent; border:none; color:#fff; cursor:pointer; font-size:16px; font-weight:bold; }
+.eta-body    { padding:14px 16px; }
+.eta-row     { display:flex; gap:12px; }
+.eta-col     { flex:1; }
+.eta-label   { font-size:10px; color:#666; text-transform:uppercase; margin-top:10px; letter-spacing:.5px; }
+.eta-bus     { font-size:15px; color:#00d4aa; font-weight:bold; }
+.eta-speed   { font-size:15px; color:#f39c12; font-weight:bold; }
+.eta-dist    { font-size:14px; color:#aaa; }
+.eta-value   { font-size:38px; color:#fff; font-weight:bold; line-height:1.1; }
+.eta-arrival { font-size:20px; color:#aaa; }
+.eta-sub     { font-size:13px; color:#888; }
+.eta-divider { height:1px; background:#0f3460; margin:10px 0; }
+.eta-update  { font-size:10px; color:#444; margin-top:8px; text-align:right; }

@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+bus-env/
+.venv/
+
+# Modeles IA (trop lourds pour GitHub)
+models/*.pkl
+
+# Docker volumes
+pgdata/
+
+# OS
+.DS_Store
+Thumbs.db
