@@ -66,5 +66,83 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  etl:
+    build:
+      context: .
+      dockerfile: Dockerfile.etl
+    container_name: etl
+    networks:
+      - busnet
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC_RAW: gps-raw
+      KAFKA_TOPIC_ENRICHED: gps-enriched
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: busdb
+      DB_USER: bususer
+      DB_PASSWORD: buspass
+    restart: on-failure
+
+  prediction:
+    build:
+      context: .
+      dockerfile: Dockerfile.prediction
+    container_name: prediction
+    networks:
+      - busnet
+    depends_on:
+      - kafka
+      - postgres
+    volumes:
+      - ./models:/app/models
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC_ENRICHED: gps-enriched
+      KAFKA_TOPIC_PREDICTIONS: predictions
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: busdb
+      DB_USER: bususer
+      DB_PASSWORD: buspass
+    restart: on-failure
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: api
+    networks:
+      - busnet
+    depends_on:
+      - postgres
+      - kafka
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: busdb
+      DB_USER: bususer
+      DB_PASSWORD: buspass
+      KAFKA_BROKER: kafka:9092
+    restart: on-failure
+
+  webapp:
+    image: nginx:alpine
+    container_name: webapp
+    networks:
+      - busnet
+    ports:
+      - "3000:80"
+    volumes:
+      - ./app:/usr/share/nginx/html
+    restart: unless-stopped
+
 volumes:
   pgdata:

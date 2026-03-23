@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/prediction_service.py src/prediction_service.py
+
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "src/prediction_service.py"]

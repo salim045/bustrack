@@ -10,9 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path="/mnt/c/users/dell/documents/bus-prediction/.env")
+load_dotenv()
 
-MODEL_DIR = "/mnt/c/users/dell/documents/bus-prediction/models"
+MODEL_DIR = os.getenv("MODEL_DIR", "/app/models")
 with open(f"{MODEL_DIR}/model_run.pkl",   "rb") as f:
     model_run = pickle.load(f)
 with open(f"{MODEL_DIR}/model_dwell.pkl", "rb") as f:
@@ -34,7 +34,6 @@ class BusIn(BaseModel):
     name: str
 
 def get_user(username, password):
-    """Recupere un utilisateur depuis PostgreSQL"""
     conn = get_db()
     cur  = conn.cursor()
     cur.execute("SELECT username, password, role FROM users WHERE username=%s AND password=%s",
@@ -46,7 +45,6 @@ def get_user(username, password):
     return {"username": row[0], "password": row[1], "role": row[2]}
 
 def check_admin(x_user: str = None, x_password: str = None):
-    """Verifie que l utilisateur est admin"""
     if not x_user or not x_password:
         raise HTTPException(status_code=401, detail="Authentification requise")
     user = get_user(x_user, x_password)
@@ -107,11 +105,6 @@ def interpolate_points(lat1, lng1, lat2, lng2, n_points):
     return points
 
 def get_real_speed(bus_id, speed_raw):
-    """
-    Retourne la vraie vitesse GPS du bus.
-    Si vitesse = 0 (arret), cherche la derniere vitesse connue.
-    Si aucune donnee, retourne 1 km/h minimum.
-    """
     if speed_raw and speed_raw > 0:
         return float(speed_raw)
     try:
@@ -128,7 +121,7 @@ def get_real_speed(bus_id, speed_raw):
             return float(row[0])
     except:
         pass
-    return 1.0  # bus completement a l arret
+    return 1.0
 
 # ============================================================
 # BUSES
@@ -178,11 +171,7 @@ def delete_bus(bus_id: str,
     return {"message": f"Bus {bus_id} supprime"}
 
 # ============================================================
-# STATIONS
-# ============================================================
-
-# ============================================================
-# LOGIN ENDPOINT
+# LOGIN / SIGNUP
 # ============================================================
 
 class LoginIn(BaseModel):
@@ -198,7 +187,6 @@ def login(data: LoginIn):
 
 @app.post("/signup")
 def signup(data: LoginIn):
-    """Creer un nouveau compte utilisateur (role user par defaut)"""
     conn = get_db()
     cur  = conn.cursor()
     cur.execute("SELECT id FROM users WHERE username = %s", (data.username,))
@@ -216,7 +204,7 @@ def signup(data: LoginIn):
     return {"id":row[0],"username":row[1],"role":row[2]}
 
 # ============================================================
-# USERS ENDPOINTS — admin seulement
+# USERS
 # ============================================================
 
 class UserIn(BaseModel):
@@ -273,6 +261,10 @@ def delete_user(username: str,
     conn.close()
     return {"message": f"Utilisateur {username} supprime"}
 
+# ============================================================
+# STATIONS
+# ============================================================
+
 @app.get("/stations")
 def get_stations():
     conn = get_db()
@@ -312,14 +304,13 @@ def delete_station(station_id: int,
     return {"message": f"Station {station_id} supprimee"}
 
 # ============================================================
-# LATEST — seulement les bus enregistres et actifs
+# ROOT + LATEST
 # ============================================================
 
 @app.get("/")
 def root():
     return {"message": "Bus Prediction API", "status": "running"}
 
-# Timeout GPS en minutes — si pas de donnee depuis X min le bus disparait
 GPS_TIMEOUT_MINUTES = 5
 
 @app.get("/latest")
@@ -346,21 +337,13 @@ def get_latest():
              "bus_name":r[10]} for r in rows]
 
 # ============================================================
-# ETA — decomposition en segments + vitesse reelle GPS
+# ETA — MODELE HYBRIDE
+# Physique  : vitesse > 20 km/h  OU  distance < 400 m
+# XGBoost   : sinon (segments + arrets intermediaires)
 # ============================================================
 
 @app.get("/eta")
 def get_eta(station_lat: float, station_lng: float, station_name: str = "unknown"):
-    """
-    Calcul ETA complet :
-    1. Vitesse reelle GPS du bus (ou derniere vitesse connue)
-    2. Si bus arrete → vitesse = 1 km/h
-    3. Divise distance en segments de 1.5km
-    4. Predit run_time pour chaque segment avec XGBoost
-    5. Detecte arrets intermediaires sur le trajet
-    6. Predit dwell_time pour chaque arret
-    7. Somme tout = ETA total
-    """
     conn = get_db()
     cur  = conn.cursor()
     cur.execute("""
@@ -392,51 +375,75 @@ def get_eta(station_lat: float, station_lng: float, station_name: str = "unknown
         hour    = r[6] if r[6] else datetime.now().hour
         created = r[7]
 
-        # VITESSE REELLE GPS
+        # Vitesse reelle GPS
         speed = get_real_speed(bus_id, r[5])
 
         # Distance totale bus -> station cible
         total_dist_km = haversine(bus_lat, bus_lng, station_lat, station_lng)
+        total_dist_m  = round(total_dist_km * 1000, 0)
 
-        # ETAPE 1 : Diviser en segments de 1.5km
-        sub_segments   = split_distance_into_segments(total_dist_km, segment_size_km=1.5)
-        n_segments     = len(sub_segments)
+        # ─────────────────────────────────────────────────────
+        # MODELE HYBRIDE
+        # Condition physique : vitesse > 20 km/h OU dist < 400 m
+        # → calcul direct distance/vitesse, rapide et precis
+        # Sinon → pipeline XGBoost complet
+        # ─────────────────────────────────────────────────────
+        use_physics = (speed > 20) or (total_dist_m < 400)
 
-        # ETAPE 2 : run_time par segment avec XGBoost
-        total_run_time = 0
-        for seg_km in sub_segments:
-            total_run_time += predict_run_time_for_segment(seg_km, speed, hour)
+        if use_physics:
+            # Approche physique : eta = distance(m) / vitesse(m/s)
+            speed_ms         = max(speed, 1.0) / 3.6
+            eta_seconds      = max(1, int(round(total_dist_km * 1000 / speed_ms)))
+            total_run_time   = float(eta_seconds)
+            total_dwell_time = 0.0
+            intermediate_stops_count = 0
+            method = "physique"
 
-        # ETAPE 3 : Arrets intermediaires par interpolation
-        n_interp    = max(10, int(total_dist_km * 2))
-        path_points = interpolate_points(bus_lat, bus_lng, station_lat, station_lng, n_interp)
+            print(f"[ETA][PHYSIQUE] bus={bus_id} vitesse={speed}km/h "
+                  f"dist={total_dist_m}m eta={eta_seconds}s ({eta_seconds//60}min)")
 
-        visited_stops      = set()
-        intermediate_stops = []
-        for pt_lat, pt_lng in path_points:
-            for s in all_stations:
-                if s["name"] == station_name: continue
-                if s["name"] in visited_stops: continue
-                if haversine(pt_lat, pt_lng, s["lat"], s["lng"]) <= s["radius_km"]:
-                    visited_stops.add(s["name"])
-                    intermediate_stops.append(s["name"])
+        else:
+            # Pipeline XGBoost complet
 
-        # ETAPE 4 : dwell_time par arret avec XGBoost
-        total_dwell_time = 0
-        for stop_name in intermediate_stops:
-            total_dwell_time += predict_dwell_time_for_stop(stop_name, hour, segment)
+            # Etape 1 : Diviser en segments de 1.5km
+            sub_segments = split_distance_into_segments(total_dist_km, segment_size_km=1.5)
 
-        # dwell_time station cible
-        total_dwell_time += predict_dwell_time_for_stop(station_name, hour, segment)
+            # Etape 2 : run_time par segment avec XGBoost
+            total_run_time = 0.0
+            for seg_km in sub_segments:
+                total_run_time += predict_run_time_for_segment(seg_km, speed, hour)
 
-        # ETAPE 5 : Somme
-        eta_seconds = max(0, int(round(total_run_time + total_dwell_time)))
-        arrival_dt  = datetime.now() + timedelta(seconds=eta_seconds)
+            # Etape 3 : Arrets intermediaires par interpolation
+            n_interp    = max(10, int(total_dist_km * 2))
+            path_points = interpolate_points(bus_lat, bus_lng, station_lat, station_lng, n_interp)
 
-        print(f"[ETA] bus={bus_id} vitesse={speed}km/h dist={total_dist_km:.1f}km "
-              f"segments={n_segments} arrets_interm={len(intermediate_stops)} "
-              f"run={total_run_time:.0f}s dwell={total_dwell_time:.0f}s "
-              f"eta={eta_seconds}s ({eta_seconds//60}min)")
+            visited_stops      = set()
+            intermediate_stops = []
+            for pt_lat, pt_lng in path_points:
+                for s in all_stations:
+                    if s["name"] == station_name: continue
+                    if s["name"] in visited_stops: continue
+                    if haversine(pt_lat, pt_lng, s["lat"], s["lng"]) <= s["radius_km"]:
+                        visited_stops.add(s["name"])
+                        intermediate_stops.append(s["name"])
+
+            # Etape 4 : dwell_time par arret avec XGBoost
+            total_dwell_time = 0.0
+            for stop_name in intermediate_stops:
+                total_dwell_time += predict_dwell_time_for_stop(stop_name, hour, segment)
+            total_dwell_time += predict_dwell_time_for_stop(station_name, hour, segment)
+
+            # Etape 5 : Somme
+            eta_seconds = max(0, int(round(total_run_time + total_dwell_time)))
+            intermediate_stops_count = len(intermediate_stops)
+            method = "xgboost"
+
+            print(f"[ETA][XGBOOST] bus={bus_id} vitesse={speed}km/h dist={total_dist_km:.1f}km "
+                  f"segments={len(sub_segments)} arrets_interm={intermediate_stops_count} "
+                  f"run={total_run_time:.0f}s dwell={total_dwell_time:.0f}s "
+                  f"eta={eta_seconds}s ({eta_seconds//60}min)")
+
+        arrival_dt = datetime.now() + timedelta(seconds=eta_seconds)
 
         results.append({
             "bus_id":             bus_id,
@@ -444,14 +451,15 @@ def get_eta(station_lat: float, station_lng: float, station_name: str = "unknown
             "bus_lng":            bus_lng,
             "speed_kmh":          round(speed, 2),
             "distance_km":        round(total_dist_km, 3),
-            "nb_segments":        n_segments,
-            "intermediate_stops": len(intermediate_stops),
+            "distance_m":         total_dist_m,
+            "intermediate_stops": intermediate_stops_count,
             "run_time_sec":       round(total_run_time, 1),
             "dwell_time_sec":     round(total_dwell_time, 1),
             "eta_seconds":        eta_seconds,
             "eta_minutes":        round(eta_seconds / 60, 1),
             "arrival_time":       arrival_dt.strftime("%H:%M:%S"),
             "station_name":       station_name,
+            "method":             method,
             "last_update":        str(created)
         })
 

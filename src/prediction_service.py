@@ -7,12 +7,12 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from kafka import KafkaConsumer, KafkaProducer
 
-load_dotenv(dotenv_path="/mnt/c/users/dell/documents/bus-prediction/.env")
+load_dotenv()
 
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:29092")
 TOPIC_IN     = os.getenv("KAFKA_TOPIC_ENRICHED", "gps-enriched")
 TOPIC_OUT    = os.getenv("KAFKA_TOPIC_PREDICTIONS", "predictions")
-MODEL_DIR    = "/mnt/c/users/dell/documents/bus-prediction/models"
+MODEL_DIR    = os.getenv("MODEL_DIR", "/app/models")
 
 with open(f"{MODEL_DIR}/model_run.pkl",   "rb") as f:
     model_run = pickle.load(f)

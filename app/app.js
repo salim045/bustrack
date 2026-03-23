@@ -198,20 +198,20 @@ function renderUserList(users) {
         <span class="uc-name">${u.username}</span>
         <span class="uc-role ${u.role}">${u.role}</span>
       </div>
-      ${u.username !== "admin" ? `<button class="uc-del" onclick='deleteUser("${u.username}")'>&#10005;</button>` : ""}
-     </div>`
-  ).join("") || "<p style='color:#555;font-size:12px;padding:8px'>Aucun utilisateur</p>";
+      ${u.username !== "admin"
+        ? `<button class="uc-del" onclick='deleteUser("${u.username}")'>&#10005;</button>`
+        : ""}
+    </div>`
+  ).join("") || "<p style='color:#555;font-size:12px'>Aucun utilisateur</p>";
 }
 
 async function deleteUser(username) {
-  if (!confirm(`Supprimer l utilisateur "${username}" ?`)) return;
-  try {
-    await fetch(`${API}/users/${username}`, {
-      method:  "DELETE",
-      headers: { "x-user": currentUser.name, "x-password": currentUser.password }
-    });
-    await loadUsersFromAPI();
-  } catch(e) { alert("Erreur: " + e.message); }
+  if (!confirm(`Supprimer l utilisateur ${username} ?`)) return;
+  await fetch(`${API}/users/${username}`, {
+    method:"DELETE",
+    headers:{ "x-user":currentUser.name, "x-password":currentUser.password }
+  });
+  await loadUsersFromAPI();
 }
 
 // ===================== STATIONS =====================
@@ -219,42 +219,42 @@ async function loadStationsFromAPI() {
   try {
     const res = await fetch(`${API}/stations`);
     stations  = await res.json();
-    renderStationsOnMap();
-    renderStationsSidebar();
+    renderStations();
   } catch(e) { console.warn("Stations non disponibles"); }
 }
 
-function renderStationsOnMap() {
-  Object.values(stationMarkers).forEach(m => map && map.removeLayer(m));
+function renderStations() {
+  Object.values(stationMarkers).forEach(m => map.removeLayer(m));
   stationMarkers = {};
-  stations.forEach(s => {
-    const m = L.marker([s.lat, s.lng], { icon: createStationIcon() })
-      .addTo(map)
-      .bindTooltip(`<b>${s.name}</b><br><small>Cliquer pour ETA</small>`,
-        { direction:"top", offset:[0,-42] });
-    m.on("click", () => showETA(s));
-    stationMarkers[s.id] = m;
-  });
-}
 
-function renderStationsSidebar() {
-  const userSide = document.getElementById("stations-sidebar");
-  if (userSide) {
-    userSide.innerHTML = stations.map(s =>
-      `<div class="station-card" onclick='showETA(${JSON.stringify(s).replace(/'/g,"&#39;")})'>
-        <span class="sc-name">${s.name}</span>
-       </div>`
-    ).join("") || "<p style='color:#555;padding:8px 16px;font-size:12px'>Aucune station</p>";
-  }
-  const adminSide = document.getElementById("station-list-admin");
-  if (adminSide) {
-    adminSide.innerHTML = stations.map(s =>
+  const sidebarAdmin = document.getElementById("station-list-admin");
+  const sidebarUser  = document.getElementById("stations-sidebar");
+
+  if (sidebarAdmin) {
+    sidebarAdmin.innerHTML = stations.map(s =>
       `<div class="station-card">
         <span class="sc-name">${s.name}</span>
-        <button class="sc-del" onclick="deleteStation(${s.id})">&#10005;</button>
-       </div>`
+        <button class="sc-del" onclick='deleteStation(${s.id})'>&#10005;</button>
+      </div>`
     ).join("") || "<p style='color:#555;font-size:12px'>Aucune station</p>";
   }
+
+  if (sidebarUser) {
+    sidebarUser.innerHTML = stations.map(s =>
+      `<div class="station-card" onclick='showETA(${JSON.stringify(s).replace(/'/g,"&#39;")})'>
+        <span class="sc-name">${s.name}</span>
+      </div>`
+    ).join("") || "<p style='color:#555;font-size:12px'>Aucune station</p>";
+  }
+
+  stations.forEach(s => {
+    const icon   = createStationIcon();
+    const marker = L.marker([s.lat, s.lng], { icon })
+      .addTo(map)
+      .bindTooltip(s.name, { direction:"top", offset:[0,-42] })
+      .on("click", () => showETA(s));
+    stationMarkers[s.id] = marker;
+  });
 }
 
 async function addStation() {
@@ -418,12 +418,27 @@ async function refreshETA() {
     const info = buses.find(b => b.id === d.bus_id);
     document.getElementById("eta-bus-id").textContent  = info ? `${d.bus_id} (${info.name})` : d.bus_id;
     document.getElementById("eta-dist").textContent    = d.distance_km + " km";
-    document.getElementById("eta-time").textContent    = d.eta_minutes + " min";
+
+    // Convertir en minutes et secondes
+    const totalSec = d.eta_seconds;
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    const etaStr = mins > 0 ? mins + " min " + secs + " sec" : secs + " sec";
+    document.getElementById("eta-time").textContent    = etaStr;
     document.getElementById("eta-arrival").textContent = d.arrival_time;
-    document.getElementById("eta-speed").textContent   = parseFloat(d.speed_kmh)>0 ? d.speed_kmh+" km/h" : "A l arret";
-    document.getElementById("eta-run").textContent     = Math.round(d.run_time_sec) + " s";
-    document.getElementById("eta-dwell").textContent   = Math.round(d.dwell_time_sec) + " s";
-    document.getElementById("eta-update").textContent  = "Mis a jour: " + new Date().toLocaleTimeString("fr-FR");
+    document.getElementById("eta-speed").textContent   = parseFloat(d.speed_kmh) > 0
+      ? d.speed_kmh + " km/h"
+      : "A l arret";
+    document.getElementById("eta-run").textContent   = Math.round(d.run_time_sec) + " s";
+    document.getElementById("eta-dwell").textContent = Math.round(d.dwell_time_sec) + " s";
+
+    // Label methode hybride
+    const methodLabel = d.method === "physique"
+      ? "Calcul physique (dist < 400 m ou vitesse > 20 km/h)"
+      : "Modele IA XGBoost";
+    document.getElementById("eta-update").textContent =
+      methodLabel + " — " + new Date().toLocaleTimeString("fr-FR");
+
   } catch(e) {
     document.getElementById("eta-bus-id").textContent = "Erreur API";
   }

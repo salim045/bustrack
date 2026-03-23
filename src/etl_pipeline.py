@@ -6,7 +6,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from kafka import KafkaConsumer, KafkaProducer
 
-load_dotenv(dotenv_path="/mnt/c/users/dell/documents/bus-prediction/.env")
+load_dotenv()
 
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:29092")
 TOPIC_IN     = os.getenv("KAFKA_TOPIC_RAW", "gps-raw")

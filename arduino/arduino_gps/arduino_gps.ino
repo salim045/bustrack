@@ -2,9 +2,9 @@
 #include <WiFiS3.h>
 #include <ArduinoJson.h>
 
-const char* ssid       = "ORANGE_CA58";
-const char* password   = "DarTouatiBenmahmoud1968";
-const char* serverIP   = "192.168.1.40";
+const char* ssid       = "Redmi 12";
+const char* password   = "salwa1971";
+const char* serverIP   = "10.236.117.119";
 const int   serverPort = 8082;
 
 WiFiClient  client;
