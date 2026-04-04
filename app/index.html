@@ -3,14 +3,248 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BusTrack</title>
+  <title>BusTrack — Suivi GPS Intelligent</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen">
+<!-- ============================================================
+     LANDING PAGE  (affichee en premier)
+     ============================================================ -->
+<div id="landing-screen">
+
+  <nav class="ln-nav">
+    <div class="ln-brand">
+      <div class="ln-brand-icon">B</div>
+      <span class="ln-brand-name">BusTrack</span>
+    </div>
+    <div class="ln-nav-links">
+      <a href="#comment">Comment ca marche</a>
+      <a href="#avantages">Avantages</a>
+      <a href="#chiffres">Chiffres</a>
+
+    </div>
+    <div class="ln-nav-actions">
+      <button class="ln-btn-ghost" onclick="goToLogin()">Connexion</button>
+      <button class="ln-btn-solid" onclick="goToSignup()">S'inscrire</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="ln-hero">
+    <div class="ln-hero-glow g1"></div>
+    <div class="ln-hero-glow g2"></div>
+    <div class="ln-hero-glow g3"></div>
+    <div class="ln-grid-overlay"></div>
+
+    <div class="ln-hero-left">
+      <div class="ln-pill">
+        <span class="ln-pill-dot"></span>
+        Suivi GPS en temps reel
+      </div>
+      <h1 class="ln-h1">
+        Suivez vos bus<br>
+        <span class="ln-h1-grad">avec l'IA</span>
+      </h1>
+      <p class="ln-hero-sub">
+        Plateforme complete de geolocalisation de flotte avec prediction
+        des temps d'arrivee.
+         
+      </p>
+       <p class="ln-hero-sub">
+         Carte interactive et alertes instantanees.
+      </p>
+      <div class="ln-hero-btns">
+        <button class="ln-cta-main" onclick="goToSignup()">
+          Commencer gratuitement
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="ln-cta-ghost" onclick="goToLogin()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+          Se connecter
+        </button>
+      </div>
+      <div class="ln-trust">
+        <div class="lt-item"><span class="lt-val">99.9%</span><span class="lt-lbl">Disponibilite</span></div>
+        <div class="lt-sep"></div>
+        <div class="lt-item"><span class="lt-val">&lt;2s</span><span class="lt-lbl">Latence GPS</span></div>
+        <div class="lt-sep"></div>
+      
+      </div>
+    </div>
+
+    <div class="ln-hero-right">
+      <div class="ln-map-card">
+        <div class="lmc-header">
+          <div class="lmc-dot red"></div>
+          <div class="lmc-dot yellow"></div>
+          <div class="lmc-dot green"></div>
+          <span class="lmc-title">BusTrack &mdash; Carte en direct</span>
+        </div>
+        <div class="lmc-body">
+          <div class="lmc-map-bg">
+            <div class="lmc-road lmc-road-h"></div>
+            <div class="lmc-road lmc-road-v"></div>
+            <div class="lmc-road lmc-road-d"></div>
+            <div class="lmc-station" style="top:28%;left:22%">
+              <div class="lmc-st-pin"></div>
+              <div class="lmc-st-name">Ariana Centre</div>
+            </div>
+            <div class="lmc-station" style="top:54%;left:58%">
+              <div class="lmc-st-pin pin-red"></div>
+              <div class="lmc-st-name">Lac II</div>
+            </div>
+            <div class="lmc-station" style="top:18%;left:67%">
+              <div class="lmc-st-pin"></div>
+              <div class="lmc-st-name">Centre Ville</div>
+            </div>
+            <div class="lmc-bus bus-move-1">
+              <svg width="40" height="28" viewBox="0 0 52 38"><rect x="1" y="2" width="50" height="26" rx="7" fill="#00d4aa" stroke="#fff" stroke-width="1.5"/><rect x="5" y="6" width="11" height="9" rx="2" fill="rgba(255,255,255,0.85)"/><rect x="20" y="6" width="11" height="9" rx="2" fill="rgba(255,255,255,0.85)"/><rect x="35" y="6" width="11" height="9" rx="2" fill="rgba(255,255,255,0.85)"/><circle cx="11" cy="34" r="4" fill="#222" stroke="#fff" stroke-width="1.5"/><circle cx="41" cy="34" r="4" fill="#222" stroke="#fff" stroke-width="1.5"/></svg>
+            </div>
+            <div class="lmc-bus bus-move-2" style="top:48%;left:32%">
+              <svg width="40" height="28" viewBox="0 0 52 38"><rect x="1" y="2" width="50" height="26" rx="7" fill="#f39c12" stroke="#fff" stroke-width="1.5"/><rect x="5" y="6" width="11" height="9" rx="2" fill="rgba(255,255,255,0.85)"/><rect x="20" y="6" width="11" height="9" rx="2" fill="rgba(255,255,255,0.85)"/><rect x="35" y="6" width="11" height="9" rx="2" fill="rgba(255,255,255,0.85)"/><circle cx="11" cy="34" r="4" fill="#222" stroke="#fff" stroke-width="1.5"/><circle cx="41" cy="34" r="4" fill="#222" stroke="#fff" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+          <div class="lmc-eta">
+            <div class="lmc-eta-top">
+              <span class="lmc-eta-live"></span>
+              <span>ETA &mdash; Lac II</span>
+            </div>
+            <div class="lmc-eta-val">3 min</div>
+            <div class="lmc-eta-detail">BUS_001 &middot; 47 km/h &middot; </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMENT CA MARCHE -->
+  <section id="comment" class="ln-features">
+    <div class="ln-sec-label">Simple &amp; Rapide</div>
+    <h2 class="ln-sec-title">Comment ca marche ?</h2>
+    <p class="ln-sec-sub">En 3 etapes simples, suivez vos bus et sachez exactement quand ils arrivent</p>
+    <div class="ln-feat-grid">
+      <div class="ln-feat-card ln-feat-wide">
+        <div class="ln-feat-icon" style="background:rgba(0,212,170,.12);color:#00d4aa">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div class="ln-feat-badge">ETAPE 1</div>
+        <h3>Creez votre compte</h3>
+        <p>Inscrivez-vous en quelques secondes. Choisissez un nom d'utilisateur et un mot de passe. Votre compte est cree immediatement et vous pouvez commencer a suivre vos bus.</p>
+      </div>
+      <div class="ln-feat-card">
+        <div class="ln-feat-icon" style="background:rgba(243,156,18,.12);color:#f39c12">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Choisissez votre station</h3>
+        <p>Cliquez sur la station la plus proche de vous sur la carte pour voir les bus qui arrivent.</p>
+      </div>
+      <div class="ln-feat-card">
+        <div class="ln-feat-icon" style="background:rgba(52,152,219,.12);color:#3498db">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Consultez l'heure d'arrivee</h3>
+        <p>Voyez en temps reel le bus le plus proche, sa vitesse et l'heure exacte d'arrivee prevue par l'IA.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AVANTAGES PASSAGERS -->
+  <section id="avantages" class="ln-pipeline">
+    <div class="ln-sec-label">Pourquoi BusTrack ?</div>
+    <h2 class="ln-sec-title">Ce que vous gagnez</h2>
+    <p class="ln-sec-sub">Des benefices concrets pour les passagers et les operateurs au quotidien</p>
+    <div class="ln-steps">
+      <div class="ln-step">
+        <div class="ln-step-num">&#9200;</div>
+        <div class="ln-step-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Fini l'attente inutile</h3>
+        <p>Sachez exactement quand partir de chez vous. Ne ratez plus jamais votre bus.</p>
+      </div>
+      <div class="ln-step-arrow">&#8594;</div>
+      <div class="ln-step">
+        <div class="ln-step-num">&#128205;</div>
+        <div class="ln-step-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Position en direct</h3>
+        <p>Voyez votre bus se deplacer sur la carte en temps reel. Toujours mis a jour toutes les 5 secondes.</p>
+      </div>
+      <div class="ln-step-arrow">&#8594;</div>
+      <div class="ln-step">
+        <div class="ln-step-num">&#129302;</div>
+        <div class="ln-step-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>Prediction intelligente</h3>
+        <p>Notre IA calcule l'heure d'arrivee en tenant compte du trafic, de la vitesse et des arrets intermediaires.</p>
+      </div>
+      <div class="ln-step-arrow">&#8594;</div>
+      <div class="ln-step">
+        <div class="ln-step-num">&#128241;</div>
+        <div class="ln-step-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>
+        </div>
+        <h3>Accessible partout</h3>
+        <p>Fonctionne sur ordinateur, tablette et mobile. Aucune installation requise, juste un navigateur.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHIFFRES CLES -->
+  <section id="chiffres" class="ln-stats-band">
+    <div class="ln-stat">
+      <div class="ls-num">5s</div>
+      <div class="ls-lbl">Mise a jour de la position</div>
+    </div>
+    <div class="ln-stat">
+      <div class="ls-num">100%</div>
+      <div class="ls-lbl">Gratuit pour les passagers</div>
+    </div>
+    <div class="ln-stat">
+      <div class="ls-num">24/7</div>
+      <div class="ls-lbl">Disponible en permanence</div>
+    </div>
+    <div class="ln-stat">
+      <div class="ls-num">IA</div>
+      <div class="ls-lbl">Prediction d'arrivee precise</div>
+    </div>
+  </section>
+
+
+
+
+  <!-- CTA FINAL -->
+  <section class="ln-cta-final">
+    <h2>Pret a suivre votre flotte ?</h2>
+    <p>Creez votre compte et visualisez vos bus en temps reel des aujourd'hui.</p>
+    <div class="ln-cta-final-btns">
+      <button class="ln-cta-main" onclick="goToSignup()">
+        Creer un compte gratuit
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="ln-cta-ghost" onclick="goToLogin()">Se connecter</button>
+    </div>
+  </section>
+
+  <footer class="ln-footer">
+    <div class="ln-brand">
+      <div class="ln-brand-icon" style="width:26px;height:26px;font-size:13px">B</div>
+      <span class="ln-brand-name" style="font-size:15px">BusTrack</span>
+    </div>
+  
+  </footer>
+
+</div><!-- /landing-screen -->
+
+
+<!-- ============================================================
+     AUTH SCREEN  (cache par defaut, ouvert par goToLogin/goToSignup)
+     ============================================================ -->
+<div id="auth-screen" style="display:none">
   <div class="auth-box">
 
     <div class="auth-logo">
@@ -19,13 +253,12 @@
       <p>Suivi de bus en temps reel</p>
     </div>
 
-    <!-- TOGGLE BUTTONS -->
     <div class="auth-toggle">
       <button id="btn-login-tab"  class="toggle-btn active" onclick="showLogin()">Connexion</button>
       <button id="btn-signup-tab" class="toggle-btn"        onclick="showSignup()">Creer un compte</button>
     </div>
 
-    <!-- LOGIN FORM -->
+    <!-- LOGIN -->
     <div id="login-form">
       <div class="input-group">
         <label>Nom d utilisateur</label>
@@ -37,13 +270,11 @@
       </div>
       <button class="btn-auth" onclick="login()">Se connecter</button>
       <p id="login-error" class="auth-error"></p>
-      <p class="auth-switch">
-        Pas encore de compte ?
-        <a href="#" onclick="showSignup()">Creer un compte</a>
-      </p>
+      <p class="auth-switch">Pas encore de compte ? <a href="#" onclick="showSignup()">Creer un compte</a></p>
+      <p class="auth-back"><a href="#" onclick="backToLanding()">&#8592; Retour a l'accueil</a></p>
     </div>
 
-    <!-- SIGNUP FORM -->
+    <!-- SIGNUP -->
     <div id="signup-form" style="display:none">
       <div class="input-group">
         <label>Nom d utilisateur</label>
@@ -55,28 +286,28 @@
       </div>
       <div class="input-group">
         <label>Confirmer le mot de passe</label>
-        <input type="password" id="signup-confirm" placeholder="Repetez le mot de passe"/>
+        <input type="password" id="signup-confirm"  placeholder="Repetez le mot de passe"/>
       </div>
       <div class="signup-info">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        Votre compte sera cree avec le role <b>Utilisateur</b>.
-        Seul un administrateur peut vous donner les droits admin.
+        Votre compte sera cree <b></b>.
       </div>
       <button class="btn-auth btn-signup" onclick="signup()">Creer mon compte</button>
       <p id="signup-error"   class="auth-error"></p>
       <p id="signup-success" class="auth-success"></p>
-      <p class="auth-switch">
-        Deja un compte ?
-        <a href="#" onclick="showLogin()">Se connecter</a>
-      </p>
+      <p class="auth-switch">Deja un compte ? <a href="#" onclick="showLogin()">Se connecter</a></p>
+      <p class="auth-back"><a href="#" onclick="backToLanding()">&#8592; Retour a l'accueil</a></p>
     </div>
 
   </div>
 </div>
 
-<!-- APP -->
+
+<!-- ============================================================
+     APP SCREEN
+     ============================================================ -->
 <div id="app-screen" style="display:none">
 
   <div id="sidebar">
@@ -88,13 +319,11 @@
     </div>
 
     <div id="admin-panel" style="display:none">
-
       <div class="panel-title">Gestion des utilisateurs</div>
       <div class="section">
         <div class="section-title">Utilisateurs enregistres</div>
         <div id="user-list"></div>
       </div>
-
       <div class="panel-title">Gestion des bus</div>
       <div class="section">
         <input type="text" id="new-bus-id"   placeholder="ID bus ex: BUS_001"/>
@@ -105,11 +334,10 @@
         <div class="section-title">Bus enregistres</div>
         <div id="bus-list"></div>
       </div>
-
       <div class="panel-title">Gestion des stations</div>
       <div class="section">
         <input type="text"   id="new-station-name"   placeholder="Nom de la station"/>
-        <input type="number" id="new-station-lat"    placeholder="Latitude" step="0.0001"/>
+        <input type="number" id="new-station-lat"    placeholder="Latitude"  step="0.0001"/>
         <input type="number" id="new-station-lng"    placeholder="Longitude" step="0.0001"/>
         <input type="number" id="new-station-radius" placeholder="Rayon km ex: 0.3" step="0.1"/>
         <button class="btn-add" onclick="addStation()">Ajouter la station</button>
@@ -119,7 +347,6 @@
         <div class="section-title">Stations en base</div>
         <div id="station-list-admin"></div>
       </div>
-
     </div>
 
     <div id="user-panel">
@@ -152,7 +379,7 @@
       <div class="eta-divider"></div>
       <div class="eta-label">Distance jusqu a la station</div>
       <div id="eta-dist" class="eta-dist">-- km</div>
-      <div class="eta-label">Prediction IA — ETA</div>
+      <div class="eta-label">Prediction IA &mdash; ETA</div>
       <div id="eta-time" class="eta-value">-- min</div>
       <div class="eta-label">Heure d arrivee estimee</div>
       <div id="eta-arrival" class="eta-arrival">--:--:--</div>
@@ -171,7 +398,7 @@
     </div>
   </div>
 
-</div>
+</div><!-- /app-screen -->
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>

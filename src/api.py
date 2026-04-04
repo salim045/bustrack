@@ -338,7 +338,7 @@ def get_latest():
 
 # ============================================================
 # ETA — MODELE HYBRIDE
-# Physique  : vitesse > 20 km/h  OU  distance < 400 m
+# Physique  : vitesse > 30 km/h  OU  distance < 400 m
 # XGBoost   : sinon (segments + arrets intermediaires)
 # ============================================================
 
@@ -384,11 +384,11 @@ def get_eta(station_lat: float, station_lng: float, station_name: str = "unknown
 
         # ─────────────────────────────────────────────────────
         # MODELE HYBRIDE
-        # Condition physique : vitesse > 20 km/h OU dist < 400 m
+        # Condition physique : vitesse > 30 km/h OU dist < 400 m
         # → calcul direct distance/vitesse, rapide et precis
         # Sinon → pipeline XGBoost complet
         # ─────────────────────────────────────────────────────
-        use_physics = (speed > 20) or (total_dist_m < 400)
+        use_physics = (speed > 30) or (total_dist_m < 400)
 
         if use_physics:
             # Approche physique : eta = distance(m) / vitesse(m/s)

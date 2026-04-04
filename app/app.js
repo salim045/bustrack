@@ -1,5 +1,24 @@
 const API = "http://localhost:8000";
 
+// ===================== LANDING NAVIGATION =====================
+function goToLogin() {
+  document.getElementById("landing-screen").style.display = "none";
+  document.getElementById("auth-screen").style.display   = "flex";
+  showLogin();
+}
+
+function goToSignup() {
+  document.getElementById("landing-screen").style.display = "none";
+  document.getElementById("auth-screen").style.display   = "flex";
+  showSignup();
+}
+
+function backToLanding() {
+  document.getElementById("auth-screen").style.display    = "none";
+  document.getElementById("landing-screen").style.display = "block";
+  document.getElementById("landing-screen").scrollTop     = 0;
+}
+
 let currentUser    = null;
 let map            = null;
 let busMarkers     = {};
@@ -99,9 +118,10 @@ async function signup() {
 function logout() {
   currentUser = null;
   if (etaInterval) clearInterval(etaInterval);
-  document.getElementById("auth-screen").style.display = "flex";
-  document.getElementById("app-screen").style.display  = "none";
-  showLogin();
+  document.getElementById("app-screen").style.display    = "none";
+  document.getElementById("auth-screen").style.display   = "none";
+  document.getElementById("landing-screen").style.display = "block";
+  document.getElementById("landing-screen").scrollTop     = 0;
 }
 
 // ===================== INIT =====================
