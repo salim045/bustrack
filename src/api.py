@@ -523,6 +523,30 @@ def get_stats():
              "eta_moyen":float(r[3]) if r[3] else 0,
              "premier_message":str(r[4]),"dernier_message":str(r[5])} for r in rows]
 
+@app.get("/latency")
+def get_latency():
+    """Mesure la latence entre la derniere donnee GPS et maintenant"""
+    conn = get_db()
+    cur  = conn.cursor()
+    cur.execute("""
+        SELECT bus_id, created_at, NOW() as now,
+               EXTRACT(EPOCH FROM (NOW() - created_at)) as latency_sec
+        FROM predictions
+        ORDER BY created_at DESC LIMIT 5
+    """)
+    rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "bus_id":      r[0],
+            "last_data":   str(r[1]),
+            "now":         str(r[2]),
+            "latency_sec": round(float(r[3]), 2),
+            "latency_ms":  round(float(r[3]) * 1000, 0)
+        }
+        for r in rows
+    ]
+
 @app.get("/history/map")
 def get_map_data():
     conn = get_db()
